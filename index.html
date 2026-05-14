@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="DayFlow">
+<meta name="apple-mobile-web-app-title" content="Tsari">
 <meta name="theme-color" id="theme-meta" content="#007AFF">
   <link rel="icon" type="image/png" href="/DayFlow.png" />
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.svg">
-<title>DayFlow</title>
+<title>Tsari</title>
 <style>
 :root{
   --acc:#007AFF;
@@ -871,10 +871,10 @@ window.onYouTubeIframeAPIReady=function(){
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();installPrompt=e;
   const sl=document.getElementById('islot');
-  if(sl)sl.innerHTML=`<div class="ibanner"><span style="font-size:28px">📲</span><div style="flex:1"><div style="font-weight:600;font-size:15px">Install DayFlow</div><div style="font-size:13px;opacity:.75">Works offline + notifications</div></div><button onclick="doInstall()">Install</button></div>`;
+  if(sl)sl.innerHTML=`<div class="ibanner"><span style="font-size:28px">📲</span><div style="flex:1"><div style="font-weight:600;font-size:15px">Install Tsari</div><div style="font-size:13px;opacity:.75">Works offline + notifications</div></div><button onclick="doInstall()">Install</button></div>`;
 });
-function doInstall(){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(r=>{if(r.outcome==='accepted')toast('🎉','Installed!','DayFlow is on your home screen');installPrompt=null;document.getElementById('islot').innerHTML='';});}
-window.addEventListener('appinstalled',()=>toast('🎉','Installed!','DayFlow on your home screen'));
+function doInstall(){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(r=>{if(r.outcome==='accepted')toast('🎉','Installed!','Tsari is on your home screen');installPrompt=null;document.getElementById('islot').innerHTML='';});}
+window.addEventListener('appinstalled',()=>toast('🎉','Installed!','Tsari on your home screen'));
 
 /* ────────────────────────────────
    SERVICE WORKER
