@@ -1,0 +1,20 @@
+{
+  "name": "Tsari — Asante Inc.",
+  "short_name": "Tsari",
+  "description": "Take back control of your most valuable resource. Built by Asante Inc.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0c0a",
+  "theme_color": "#0c0c0a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "DayFlow.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["tracker","schedules", "utilities"],
+  "lang": "en"
+}
