@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DayFlow">
+<meta name="theme-color" id="theme-meta" content="#007AFF">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>DayFlow</title>
+<style>
+:root{
+  --acc:#007AFF;
+  --green:#34C759;--orange:#FF9500;--red:#FF3B30;--purple:#AF52DE;--teal:#5AC8FA;--indigo:#5856D6;
+  --bg:#F2F2F7;--surface:#FFFFFF;--glass:rgba(255,255,255,.82);
+  --fill:rgba(120,120,128,.12);--fill2:rgba(120,120,128,.07);
+  --text:#1C1C1E;--text2:rgba(60,60,67,.55);--text3:rgba(60,60,67,.3);
+  --sep:rgba(60,60,67,.12);
+  --sh:0 2px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
+  --sh2:0 6px 28px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.06);
+  --r:14px;--rl:20px;--rxl:26px;
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Segoe UI',Helvetica,sans-serif;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+  --tabh:82px;--mbarh:56px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#000;--surface:#1C1C1E;--glass:rgba(28,28,30,.88);
+  --fill:rgba(120,120,128,.22);--fill2:rgba(120,120,128,.14);
+  --text:#FFF;--text2:rgba(235,235,245,.55);--text3:rgba(235,235,245,.25);
+  --sep:rgba(84,84,88,.6);
+  --sh:0 2px 12px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.25);
+}}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  padding-bottom:calc(var(--tabh) + var(--mbarh) + var(--sb))}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 15% 40%,color-mix(in srgb,var(--acc) 5%,transparent) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 50% at 85% 15%,rgba(175,82,222,.04) 0%,transparent 50%)}
+::-webkit-scrollbar{display:none}*{scrollbar-width:none}
+#page{position:relative;z-index:1;padding-top:calc(var(--st) + 16px);padding-bottom:8px;min-height:100dvh}
+.ph{padding:0 20px}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@keyframes slideL{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes eq{0%,100%{height:3px}50%{height:14px}}
+
+.page-enter{animation:fadeUp .38s cubic-bezier(.16,1,.3,1) both}
+.page-fr{animation:slideR .32s cubic-bezier(.16,1,.3,1) both}
+.page-fl{animation:slideL .32s cubic-bezier(.16,1,.3,1) both}
+.stag>*{opacity:0;animation:fadeUp .38s cubic-bezier(.16,1,.3,1) forwards}
+.stag>*:nth-child(1){animation-delay:.04s}.stag>*:nth-child(2){animation-delay:.08s}
+.stag>*:nth-child(3){animation-delay:.12s}.stag>*:nth-child(4){animation-delay:.16s}
+.stag>*:nth-child(5){animation-delay:.20s}.stag>*:nth-child(6){animation-delay:.24s}
+.stag>*:nth-child(7){animation-delay:.28s}.stag>*:nth-child(8){animation-delay:.32s}
+.stag>*:nth-child(9){animation-delay:.36s}.stag>*:nth-child(10){animation-delay:.40s}
+.stag>*:nth-child(11){animation-delay:.44s}.stag>*:nth-child(12){animation-delay:.48s}
+
+/* Type */
+.t1{font-size:28px;font-weight:700;letter-spacing:.3px}
+.t2{font-size:22px;font-weight:700;letter-spacing:.3px}
+.t3{font-size:20px;font-weight:600;letter-spacing:.25px}
+.hl{font-size:17px;font-weight:600;letter-spacing:-.4px}
+.sub{font-size:15px;font-weight:400;letter-spacing:-.2px}
+.fn{font-size:13px;font-weight:400}
+.sec{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:24px 0 8px;padding:0 20px}
+
+/* Cards */
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);transform:translateZ(0)}
+.row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface)}
+.row+.row{border-top:.5px solid var(--sep)}
+.row:first-child{border-radius:var(--r) var(--r) 0 0}
+.row:last-child{border-radius:0 0 var(--r) var(--r)}
+.row:only-child{border-radius:var(--r)}
+.rg{box-shadow:var(--sh);margin-bottom:20px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 20px;border-radius:100px;border:none;font-family:var(--font);
+  font-size:16px;font-weight:600;cursor:pointer;letter-spacing:-.2px;
+  transition:transform .12s cubic-bezier(.34,1.56,.64,1),opacity .12s ease;will-change:transform}
+.btn:active{transform:scale(.93);opacity:.8}
+.btn-p{background:var(--acc);color:#fff}
+.btn-s{background:var(--fill);color:var(--acc)}
+.btn-r{background:rgba(255,59,48,.12);color:var(--red)}
+.btn-sm{padding:7px 16px;font-size:14px}
+.btn-fw{width:100%}
+.btn-ic{width:42px;height:42px;border-radius:50%;padding:0;background:var(--fill)}
+
+/* Toggle */
+.tog{width:51px;height:31px;border-radius:100px;border:none;cursor:pointer;
+  position:relative;background:var(--fill);flex-shrink:0;
+  transition:background .28s cubic-bezier(.4,0,.2,1)}
+.tog.on{background:var(--green)}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;
+  border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);
+  transition:transform .28s cubic-bezier(.34,1.56,.64,1);will-change:transform}
+.tog.on::after{transform:translateX(20px)}
+
+/* Checkbox */
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--sep);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  transition:all .22s cubic-bezier(.34,1.56,.64,1);will-change:transform}
+.chk.on{border-color:var(--green);background:var(--green);animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+.chk.on::after{content:'';width:6px;height:10px;border:2.5px solid #fff;
+  border-top:none;border-left:none;transform:rotate(45deg) translate(-1px,-1px)}
+
+/* Progress */
+.pbar{height:6px;background:var(--fill);border-radius:3px;overflow:hidden}
+.pfill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.34,1.56,.64,1);will-change:width}
+
+/* Inputs */
+.inp{background:var(--fill);border:none;border-radius:10px;padding:10px 13px;
+  font-family:var(--font);font-size:16px;color:var(--text);width:100%;outline:none}
+.inp:focus{outline:2px solid var(--acc);outline-offset:-2px}
+.sel{background:var(--fill);border:none;border-radius:10px;padding:10px 13px;
+  font-family:var(--font);font-size:16px;color:var(--text);width:100%;outline:none;
+  -webkit-appearance:none;cursor:pointer}
+.sel:focus{outline:2px solid var(--acc);outline-offset:-2px}
+
+/* Tab bar */
+.tabbar{position:fixed;bottom:calc(var(--mbarh));left:0;right:0;height:var(--tabh);
+  background:var(--glass);backdrop-filter:blur(40px) saturate(200%);
+  -webkit-backdrop-filter:blur(40px) saturate(200%);border-top:.5px solid var(--sep);
+  display:flex;align-items:flex-start;padding:8px 4px 0;z-index:900}
+.ti{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:none;border:none;cursor:pointer;padding:4px 2px;font-family:var(--font);transition:opacity .12s}
+.ti:active{opacity:.45}
+.ti svg{width:22px;height:22px;fill:none;stroke:var(--text3);stroke-width:1.75;
+  stroke-linecap:round;stroke-linejoin:round;
+  transition:stroke .2s,transform .25s cubic-bezier(.34,1.56,.64,1);will-change:transform}
+.ti span{font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.02em;transition:color .2s}
+.ti.on svg{stroke:var(--acc);transform:scale(1.08)}
+.ti.on span{color:var(--acc)}
+
+/* Music bar */
+.mbar{position:fixed;bottom:0;left:0;right:0;z-index:901;overflow:hidden;
+  background:var(--glass);backdrop-filter:blur(40px) saturate(200%);
+  -webkit-backdrop-filter:blur(40px) saturate(200%);border-top:.5px solid var(--sep);
+  transition:height .35s cubic-bezier(.16,1,.3,1)}
+.mbar-mini{height:var(--mbarh);display:flex;align-items:center;gap:10px;
+  padding:0 16px 0 14px;cursor:pointer}
+.mbar-eq{display:flex;gap:2.5px;align-items:flex-end;height:18px;flex-shrink:0}
+.mbar-eq span{width:2.5px;border-radius:1.5px;background:var(--acc);height:4px;
+  animation:eq .8s ease infinite}
+.mbar-eq span:nth-child(1){animation-duration:.65s}
+.mbar-eq span:nth-child(2){animation-duration:.9s;animation-delay:.1s}
+.mbar-eq span:nth-child(3){animation-duration:.75s;animation-delay:.2s}
+.mbar-eq span:nth-child(4){animation-duration:1.1s;animation-delay:.05s}
+.mbar-eq.paused span{animation-play-state:paused;height:4px}
+.mbar-info{flex:1;min-width:0}
+.mbar-track{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbar-state{font-size:11px;color:var(--text3);margin-top:1px}
+.mbar-playbtn{width:36px;height:36px;border-radius:50%;border:none;background:var(--acc);
+  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:transform .15s cubic-bezier(.34,1.56,.64,1),background .2s;will-change:transform}
+.mbar-playbtn:active{transform:scale(.86)}
+.mbar-vol{width:72px;-webkit-appearance:none;appearance:none;height:4px;
+  background:var(--fill);border-radius:2px;outline:none;cursor:pointer;flex-shrink:0}
+.mbar-vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--acc);cursor:pointer}
+.mbar-chev{color:var(--text3);font-size:11px;flex-shrink:0;transition:transform .3s cubic-bezier(.16,1,.3,1);padding:4px}
+.mbar-panel{padding:0 16px 16px;border-top:.5px solid var(--sep);animation:fadeDown .3s cubic-bezier(.16,1,.3,1)}
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.sopt{padding:10px 12px;border-radius:var(--r);background:var(--fill);cursor:pointer;
+  border:2px solid transparent;transition:all .18s ease}
+.sopt.active{border-color:var(--acc)}
+.sopt:active{transform:scale(.96)}
+.sopt-name{font-size:13px;font-weight:600}
+.sopt-desc{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* Schedule blocks */
+.sblk{display:flex;align-items:flex-start;gap:10px;padding:13px 16px;
+  background:var(--surface);border-radius:var(--r);margin:0 20px 8px;
+  box-shadow:var(--sh);cursor:pointer;
+  transition:transform .15s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;will-change:transform;transform:translateZ(0)}
+.sblk:active{transform:scale(.98)}
+.sblk.actnow{box-shadow:0 4px 24px color-mix(in srgb,var(--acc) 22%,transparent),var(--sh)}
+.sblk.done{opacity:.6}
+.sblk.done .sblk-t{text-decoration:line-through}
+.sblk-bar{width:3px;min-height:36px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.sblk-time{min-width:56px;font-size:12px;font-weight:500;color:var(--text3);padding-top:2px;flex-shrink:0}
+.sblk-info{flex:1}
+.sblk-t{font-size:16px;font-weight:600;margin-bottom:2px}
+.sblk-d{font-size:12px;color:var(--text3)}
+.tind{display:flex;align-items:center;gap:6px;margin:4px 20px}
+.tind-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulse 2s ease infinite}
+.tind-line{height:1px;flex:1;background:var(--red);opacity:.45}
+.tind-lbl{font-size:11px;font-weight:700;color:var(--red);flex-shrink:0}
+
+/* Hero */
+.hero{border-radius:var(--rxl);padding:22px;margin:0 20px 20px;
+  position:relative;overflow:hidden;box-shadow:var(--sh2);transform:translateZ(0)}
+.hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;
+  border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-70px;left:-30px;width:180px;height:180px;
+  border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+
+/* Stats */
+.stats{display:flex;gap:10px;margin:0 20px 20px}
+.stat{flex:1;background:var(--surface);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.stat-v{font-size:26px;font-weight:700;line-height:1}
+.stat-l{font-size:11px;color:var(--text3);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+
+/* Subject cards */
+.scard{background:var(--surface);border-radius:var(--rl);padding:18px;
+  margin:0 20px 12px;box-shadow:var(--sh);transition:transform .15s cubic-bezier(.34,1.56,.64,1);will-change:transform}
+.sico{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;letter-spacing:-.5px}
+.task{display:flex;align-items:center;gap:12px;padding:10px 0;cursor:pointer;
+  border-bottom:.5px solid var(--sep);transition:opacity .15s}
+.task:last-child{border-bottom:none}
+.task:active{opacity:.55}
+.task-t{font-size:15px;color:var(--text);flex:1}
+.task.done .task-t{text-decoration:line-through;color:var(--text3)}
+
+/* Focus ring */
+.rw{display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto}
+.ri{position:absolute;text-align:center;pointer-events:none}
+#timer-ring{transition:stroke-dashoffset 1s linear,stroke .4s ease;will-change:stroke-dashoffset}
+
+/* Profile */
+.av-btn{width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;
+  font-size:32px;background:var(--fill);display:flex;align-items:center;justify-content:center;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1);will-change:transform}
+.av-btn:active{transform:scale(.88)}
+.acc-sw{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),border-color .2s;will-change:transform}
+.acc-sw:active{transform:scale(.86)}
+.acc-sw.active{border-color:var(--text);transform:scale(1.14)}
+.soon{font-size:11px;font-weight:600;letter-spacing:.06em;padding:2px 8px;
+  border-radius:100px;background:rgba(255,149,0,.12);color:var(--orange)}
+
+/* Install */
+.ibanner{margin:0 20px 20px;padding:14px 16px;border-radius:var(--rl);
+  background:linear-gradient(135deg,var(--acc),#5856D6);color:#fff;
+  display:flex;align-items:center;gap:12px;box-shadow:0 4px 20px color-mix(in srgb,var(--acc) 30%,transparent)}
+.ibanner button{background:rgba(255,255,255,.22);color:#fff;border:none;
+  padding:7px 14px;border-radius:100px;font-size:14px;font-weight:600;cursor:pointer}
+.ibanner button:active{background:rgba(255,255,255,.38)}
+
+/* Toast */
+.toast{position:fixed;top:calc(var(--st) + 16px);left:16px;right:16px;
+  background:rgba(28,28,30,.95);color:#fff;padding:12px 16px;border-radius:var(--rl);
+  font-size:14px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  z-index:2000;box-shadow:0 8px 32px rgba(0,0,0,.35);
+  display:flex;align-items:center;gap:10px;animation:fadeDown .4s cubic-bezier(.16,1,.3,1) both}
+.toast-i{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
+/* Modal */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1500;
+  display:flex;align-items:flex-end;animation:fadeUp .2s ease both}
+.modal{background:var(--bg);border-radius:28px 28px 0 0;
+  padding:24px 20px calc(32px + var(--sb));width:100%;max-height:80dvh;overflow-y:auto;
+  position:relative;z-index:1;animation:fadeUp .38s cubic-bezier(.16,1,.3,1) both}
+.modal-h{width:36px;height:4px;border-radius:2px;background:var(--sep);margin:0 auto 20px}
+
+/* Utils */
+.flex{display:flex}.col{flex-direction:column}.ac{align-items:center}
+.jb{justify-content:space-between}.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}
+.sep-r{height:.5px;background:var(--sep);margin:0 16px}
+.tc{text-align:center}.w100{width:100%}
+</style>
+</head>
+<body>
+
+<!-- Hidden YT iframe container -->
+<div id="yt-holder" style="position:fixed;width:0;height:0;overflow:hidden;visibility:hidden;z-index:-1">
+  <div id="yt-player"></div>
+</div>
+
+<!-- Page content -->
+<div id="page"></div>
+
+<!-- ─── MUSIC BAR (persistent) ─── -->
+<div class="mbar" id="mbar" style="height:var(--mbarh)">
+  <div class="mbar-mini" onclick="togglePanel()">
+    <div class="mbar-eq paused" id="meq">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="mbar-info">
+      <div class="mbar-track" id="mtrack">Music — tap to explore</div>
+      <div class="mbar-state" id="mstate">Paused</div>
+    </div>
+    <button class="mbar-playbtn" id="mplaybtn" onclick="event.stopPropagation();mTogglePlay()">
+      <svg width="13" height="13" viewBox="0 0 24 24" id="m-play-svg"><polygon points="5,3 19,12 5,21" fill="white"/></svg>
+    </button>
+    <input type="range" class="mbar-vol" id="mvol" min="0" max="100" value="70"
+      onclick="event.stopPropagation()" oninput="mSetVol(+this.value)">
+    <div class="mbar-chev" id="mchev">▲</div>
+  </div>
+  <div class="mbar-panel" id="mpanel" style="display:none">
+    <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin:10px 0 10px">Streams</div>
+    <div class="sgrid" id="sgrid"></div>
+    <div class="flex ac g8">
+      <input type="text" class="inp" id="cust-id" placeholder="Paste YouTube URL or video ID" style="font-size:14px" onclick="event.stopPropagation()">
+      <button class="btn btn-s btn-sm" onclick="event.stopPropagation();mPlayCustom()" style="white-space:nowrap">Play</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:6px">Any YouTube URL works — playlists, live streams, anything.</div>
+  </div>
+</div>
+
+<!-- ─── TAB BAR ─── -->
+<nav class="tabbar" id="tabbar">
+  <button class="ti on" onclick="nav('today')" id="tab-today">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="8" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1.3" fill="currentColor" stroke="none"/></svg>
+    <span>Today</span>
+  </button>
+  <button class="ti" onclick="nav('schedule')" id="tab-schedule">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><circle cx="7" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="17" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+    <span>Schedule</span>
+  </button>
+  <button class="ti" onclick="nav('focus')" id="tab-focus">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+    <span>Focus</span>
+  </button>
+  <button class="ti" onclick="nav('goals')" id="tab-goals">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="11" opacity=".4"/></svg>
+    <span>Goals</span>
+  </button>
+  <button class="ti" onclick="nav('settings')" id="tab-settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+
+<script>
+/* ────────────────────────────────
+   STREAMS (update IDs as needed)
+────────────────────────────────── */
+const STREAMS=[
+  {id:'jfKfPfyJRdk',name:'Lofi Girl',    desc:'Hip hop · 24/7',    icon:'📚'},
+  {id:'5qap5aO4i9A',name:'Chillhop',     desc:'Jazz hop · chill',  icon:'🎷'},
+  {id:'7NOSDKb0HlU',name:'Deep Focus',   desc:'Minimal · no lyrics',icon:'🧠'},
+  {id:'DWcJFNfaw9c',name:'Jazz Café',    desc:'Coffee shop vibes', icon:'☕'},
+];
+
+/* ────────────────────────────────
+   CATEGORIES
+────────────────────────────────── */
+const C={
+  calculus:    {c:'#007AFF',bg:'rgba(0,122,255,.13)',  lbl:'Calculus',       sym:'∫'},
+  python:      {c:'#34C759',bg:'rgba(52,199,89,.13)',  lbl:'Python Dev',     sym:'Py'},
+  webdesign:   {c:'#AF52DE',bg:'rgba(175,82,222,.13)', lbl:'Web Design',     sym:'<>'},
+  electronics: {c:'#FF9500',bg:'rgba(255,149,0,.13)',  lbl:'Electronics',    sym:'⚡'},
+  thermo:      {c:'#FF3B30',bg:'rgba(255,59,48,.13)',  lbl:'Thermodynamics', sym:'△'},
+  biochem:     {c:'#5AC8FA',bg:'rgba(90,200,250,.13)', lbl:'Biochemistry',   sym:'◎'},
+  wellness:    {c:'#64D2FF',bg:'rgba(100,210,255,.09)',lbl:'Wellness',       sym:'♡'},
+  free:        {c:'#8E8E93',bg:'rgba(142,142,147,.09)',lbl:'Free Time',      sym:'◇'},
+};
+const SROT=['free','electronics','thermo','biochem','electronics','thermo','biochem'];
+const CROT=['free','python','webdesign','python','webdesign','python','webdesign'];
+const AVATARS=['🧑‍💻','👨‍🎓','👩‍🎓','🚀','🦁','🐯','⚡','🔥','🎯','🌟','🧠','🎓','😤','💪','🏆'];
+const ACCENTS=[{n:'Blue',c:'#007AFF'},{n:'Indigo',c:'#5856D6'},{n:'Purple',c:'#AF52DE'},{n:'Green',c:'#34C759'},{n:'Orange',c:'#FF9500'}];
+
+/* ────────────────────────────────
+   DEFAULT STATE
+────────────────────────────────── */
+const DEF_SCH=[
+  {id:'s1',time:'09:00',dur:30, cat:'wellness',  title:'Wake up & sunlight',   note:'No phone 20 min. Walk outside — resets your clock.'},
+  {id:'s2',time:'09:30',dur:30, cat:'wellness',  title:'Breakfast & plan day', note:'Write 3 targets for today before anything else.'},
+  {id:'s3',time:'10:00',dur:120,cat:'calculus',  title:'Calculus',             note:'Watch 1-2 lessons then solve immediately. No passive watching.'},
+  {id:'s4',time:'12:00',dur:30, cat:'wellness',  title:'Lunch & walk',         note:'Away from screens. Walking consolidates what you studied.'},
+  {id:'s5',time:'12:30',dur:120,cat:'python',    title:'Coding session',       note:'Mon/Wed/Fri→Python Fullstack.  Tue/Thu/Sat→FreeCodeCamp.'},
+  {id:'s6',time:'14:30',dur:30, cat:'wellness',  title:'Break & snack',        note:'Avoid social media — it kills re-entry into focus mode.'},
+  {id:'s7',time:'15:00',dur:90, cat:'electronics',title:'Science subjects',    note:'Mon/Thu: Electronics · Tue/Fri: Thermo · Wed/Sat: Biochem'},
+  {id:'s8',time:'16:30',dur:90, cat:'free',      title:'Free time / Exercise', note:'Light activity or personal projects.'},
+  {id:'s9',time:'21:00',dur:60, cat:'wellness',  title:'Wind down',            note:'Review today. Set 3 targets for tomorrow. No new study.'},
+  {id:'s10',time:'22:30',dur:0, cat:'wellness',  title:'Sleep',                note:'Shift 30 min earlier every few days from your current 5am.'},
+];
+const DEF_SUBJ={
+  calculus:    {tasks:['Watch limits lecture','Solve 10 limit problems','Derivatives intro','Solve 15 derivative problems','Integration basics','Problem set 1'],notes:''},
+  python:      {tasks:['Complete Module 1','Build first Flask app','SQLite database basics','REST API fundamentals','Build a CRUD project','Auth implementation'],notes:''},
+  webdesign:   {tasks:['Basic HTML structure','CSS Box Model','Flexbox challenges (FCC)','CSS Grid layouts','Responsive project','Certification project'],notes:''},
+  electronics: {tasks:["Ohm's Law problems","Series & parallel circuits",'Capacitors & inductors','Logic gates','RC circuit analysis','Build a simple circuit'],notes:''},
+  thermo:      {tasks:['1st Law problems','2nd Law & entropy','Rankine cycle','Refrigeration cycle','Heat transfer basics','Problem set 1'],notes:''},
+  biochem:     {tasks:['Cell biology review','Metabolism fundamentals','Glycolysis pathway','Citric acid cycle','Protein synthesis','Enzyme kinetics'],notes:''},
+};
+function defState(){return{schedule:DEF_SCH.map(b=>({...b})),done:{},tdone:{},subjects:JSON.parse(JSON.stringify(DEF_SUBJ)),timer:{subj:'calculus',work:50,brk:10,left:50*60,isBreak:false,running:false,sessions:0},settings:{notifs:true,notifyMin:5,snotifs:{calculus:true,python:true,webdesign:true,electronics:true,thermo:true,biochem:true}},profile:{name:'',avatar:'🚀',accent:'#007AFF'},notifPerm:'default'};}
+
+let S=(()=>{try{const r=localStorage.getItem('df2');if(r){const p=JSON.parse(r);return{...defState(),...p,subjects:{...DEF_SUBJ,...(p.subjects||{})},profile:{...defState().profile,...(p.profile||{})},settings:{...defState().settings,...(p.settings||{})}}}}catch(e){}return defState();})();
+const save=()=>localStorage.setItem('df2',JSON.stringify(S));
+
+/* ────────────────────────────────
+   NAVIGATION
+────────────────────────────────── */
+const TABS=['today','schedule','focus','goals','settings'];
+let view='today',prevIdx=0,timerTick=null,installPrompt=null;
+
+function nav(v){
+  if(v!=='focus')stopTimer();
+  const ni=TABS.indexOf(v),dir=ni>prevIdx?'fl':'fr';
+  prevIdx=ni;view=v;
+  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+v)?.classList.add('on');
+  render(dir);window.scrollTo({top:0,behavior:'smooth'});
+}
+function render(dir='enter'){
+  const cls=dir==='fl'?'page-fl':dir==='fr'?'page-fr':'page-enter';
+  const fn={today:rToday,schedule:rSchedule,focus:rFocus,goals:rGoals,settings:rSettings};
+  document.getElementById('page').innerHTML=`<div class="stag ${cls}">${(fn[view]||rToday)()}</div>`;
+  if(view==='focus')initTimer();
+}
+
+/* ────────────────────────────────
+   HELPERS
+────────────────────────────────── */
+const today=()=>new Date().toISOString().split('T')[0];
+const nowMin=()=>{const n=new Date();return n.getHours()*60+n.getMinutes();};
+const t2m=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+const fmtT=t=>{const[h,m]=t.split(':').map(Number),ap=h>=12?'PM':'AM',hr=h%12||12;return`${hr}:${String(m).padStart(2,'0')} ${ap}`;};
+const fmtMin=m=>m?`${Math.floor(m/60)?Math.floor(m/60)+'h ':''} ${m%60?m%60+'m':''}`.trim():'';
+const greet=()=>{const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening';};
+const fmtSec=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+function getSch(){
+  const d=new Date().getDay();
+  return S.schedule.map(b=>{
+    if(b.id==='s5'){const ct=CROT[d]||'python';return{...b,cat:ct,title:ct==='python'?'Python Fullstack':'FreeCodeCamp Web Design'};}
+    if(b.id==='s7'){const ct=SROT[d]||'electronics';return{...b,cat:ct,title:C[ct]?.lbl||'Science'};}
+    return b;
+  });
+}
+const schd=()=>getSch();
+const bDone=()=>S.done[today()]||[];
+const isBlkDone=id=>bDone().includes(id);
+const prog=()=>{const d=bDone().length,t=schd().filter(b=>b.dur>0).length;return{d,t,pct:t?Math.round(d/t*100):0};};
+const studyHrs=()=>{const keys=['calculus','python','webdesign','electronics','thermo','biochem'];let m=0;schd().forEach(b=>{if(keys.includes(b.cat)&&isBlkDone(b.id))m+=b.dur});return(m/60).toFixed(1);};
+function curBlk(){const n=nowMin();return schd().find(b=>{const s=t2m(b.time);return n>=s&&n<s+b.dur;})||null;}
+function nxtBlk(){const n=nowMin();return schd().find(b=>t2m(b.time)>n)||null;}
+function togBlk(id){if(!S.done[today()])S.done[today()]=[];const i=S.done[today()].indexOf(id);if(i>-1)S.done[today()].splice(i,1);else S.done[today()].push(id);save();render();}
+function togTask(k){S.tdone[k]=!S.tdone[k];save();render();}
+const tdDone=()=>Object.values(S.tdone).filter(Boolean).length;
+const tdTotal=()=>Object.values(S.subjects).reduce((a,s)=>a+(s.tasks||[]).length,0);
+
+/* ────────────────────────────────
+   TODAY VIEW
+────────────────────────────────── */
+function rToday(){
+  const p=prog(),nm=nowMin(),hero=curBlk()||nxtBlk(),isNow=!!curBlk();
+  const name=S.profile.name||'Champion';
+  let h='';
+  h+=`<div class="ph flex ac jb mb8">
+    <div>
+      <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+      <div class="t1">${greet()}, ${name} ${S.profile.avatar}</div>
+    </div>
+    <div style="position:relative;width:64px;height:64px">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="27" fill="none" stroke="var(--fill)" stroke-width="5.5"/>
+        <circle cx="32" cy="32" r="27" fill="none" stroke="var(--acc)" stroke-width="5.5"
+          stroke-linecap="round" stroke-dasharray="169.6"
+          stroke-dashoffset="${(169.6*(1-p.pct/100)).toFixed(1)}"
+          transform="rotate(-90 32 32)"
+          style="transition:stroke-dashoffset .7s cubic-bezier(.34,1.56,.64,1)"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+        <div style="font-size:14px;font-weight:700">${p.pct}%</div>
+      </div>
+    </div>
+  </div>`;
+  h+=`<div id="islot"></div>`;
+  h+=`<div class="stats">
+    <div class="stat"><div class="stat-v" style="color:var(--acc)">${p.d}</div><div class="stat-l">Done</div></div>
+    <div class="stat"><div class="stat-v" style="color:var(--green)">${p.t-p.d}</div><div class="stat-l">Left</div></div>
+    <div class="stat"><div class="stat-v" style="color:var(--orange)">${studyHrs()}</div><div class="stat-l">Study hrs</div></div>
+  </div>`;
+  if(hero){
+    const cat=C[hero.cat]||C.wellness;
+    h+=`<div class="hero" style="background:linear-gradient(135deg,${cat.c},${cat.c}cc)">
+      <div style="position:relative;z-index:1">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.65);margin-bottom:6px">${isNow?'▶ Now':'⏭ Up next'}</div>
+        <div style="font-size:26px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.15">${hero.title}</div>
+        <div style="font-size:15px;color:rgba(255,255,255,.75)">${fmtT(hero.time)}${hero.dur?' · '+fmtMin(hero.dur):''}</div>
+        ${hero.note?`<div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:8px;line-height:1.5">${hero.note}</div>`:''}
+      </div>
+    </div>`;
+  }
+  h+=`<div class="sec">Today's blocks</div>`;
+  let pastNow=false;
+  for(const b of schd()){
+    const bm=t2m(b.time),inNow=nm>=bm&&nm<bm+b.dur,isPast=nm>=bm+b.dur&&b.dur>0,done=isBlkDone(b.id);
+    const cat=C[b.cat]||C.wellness;
+    if(!pastNow&&bm>nm){pastNow=true;h+=`<div class="tind"><div class="tind-dot"></div><div class="tind-line"></div><div class="tind-lbl">${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div></div>`;}
+    h+=`<div class="sblk${inNow?' actnow':''}${done?' done':''}" onclick="togBlk('${b.id}')">
+      <div class="sblk-bar" style="background:${done?'var(--sep)':cat.c}"></div>
+      <div class="sblk-time">${fmtT(b.time)}</div>
+      <div class="sblk-info"><div class="sblk-t">${b.title}</div>
+        ${b.dur?`<div class="sblk-d">${fmtMin(b.dur)}${inNow?' · in progress':isPast?' · past':''}</div>`:'<div class="sblk-d">target</div>'}
+      </div>
+      ${b.dur?`<div class="chk${done?' on':''}" style="pointer-events:none"></div>`:`<span style="font-size:18px">😴</span>`}
+    </div>`;
+  }
+  setTimeout(()=>{const sl=document.getElementById('islot');if(sl&&installPrompt)sl.innerHTML=`<div class="ibanner"><span style="font-size:28px">📲</span><div style="flex:1"><div style="font-weight:600;font-size:15px">Install DayFlow</div><div style="font-size:13px;opacity:.75">Offline + push notifications</div></div><button onclick="doInstall()">Install</button></div>`;},80);
+  return h;
+}
+
+/* ────────────────────────────────
+   SCHEDULE VIEW
+────────────────────────────────── */
+function rSchedule(){
+  let h=`<div class="ph flex ac jb mb16"><div class="t2">Schedule</div><button class="btn btn-s btn-sm" onclick="openAddBlk()">+ Add</button></div>`;
+  h+=`<div class="ph mb12 fn" style="color:var(--text3)">Tap to mark done · Long-press to delete · Coding & science rotate by day</div>`;
+  for(const b of schd()){
+    const cat=C[b.cat]||C.wellness,done=isBlkDone(b.id);
+    h+=`<div class="sblk${done?' done':''}" onclick="togBlk('${b.id}')" oncontextmenu="delBlk('${b.id}');return false">
+      <div style="width:40px;height:40px;border-radius:12px;background:${cat.bg};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:${cat.c};flex-shrink:0">${cat.sym}</div>
+      <div class="sblk-time">${fmtT(b.time)}</div>
+      <div class="sblk-info"><div class="sblk-t">${b.title}</div>
+        <div style="font-size:12px;color:${cat.c};font-weight:500">${cat.lbl}${b.dur?' · '+fmtMin(b.dur):''}</div></div>
+      <div class="chk${done?' on':''}" style="pointer-events:none"></div>
+    </div>`;
+  }
+  h+=`<div class="ph mt12 tc fn" style="color:var(--text3);line-height:1.7">Coding: Mon/Wed/Fri → Python · Tue/Thu/Sat → Web Design<br>Science: Mon/Thu → Electronics · Tue/Fri → Thermo · Wed/Sat/Sun → Biochem</div>`;
+  return h;
+}
+
+/* ────────────────────────────────
+   FOCUS VIEW
+────────────────────────────────── */
+function rFocus(){
+  const t=S.timer,cat=C[t.subj]||C.calculus;
+  const total=(t.isBreak?t.brk:t.work)*60,CC=2*Math.PI*88;
+  const off=(CC*(1-t.left/total)).toFixed(1);
+  return`<div class="ph flex ac jb mb16"><div class="t2">Focus</div>
+    <div style="font-size:14px;color:var(--text3)">🔥 ${t.sessions} sessions today</div></div>
+    <div class="tc ph mb12">
+      <span style="padding:5px 16px;border-radius:100px;background:${cat.bg};color:${cat.c};font-size:13px;font-weight:600">
+        ${t.isBreak?'☕ Break time':'⚡ '+cat.lbl}
+      </span>
+    </div>
+    <div class="rw" style="width:232px;height:232px">
+      <svg width="232" height="232" viewBox="0 0 232 232">
+        <circle cx="116" cy="116" r="88" fill="none" stroke="var(--fill)" stroke-width="10"/>
+        <circle cx="116" cy="116" r="88" fill="none"
+          stroke="${t.isBreak?'var(--green)':cat.c}" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="${CC.toFixed(1)}" stroke-dashoffset="${off}"
+          transform="rotate(-90 116 116)" id="timer-ring"/>
+      </svg>
+      <div class="ri">
+        <div id="timer-disp" style="font-size:48px;font-weight:700;letter-spacing:-3px;font-variant-numeric:tabular-nums;line-height:1">${fmtSec(t.left)}</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:4px">${t.isBreak?'break':'focus'}</div>
+      </div>
+    </div>
+    <div class="ph flex g12 mb16" style="margin-top:8px">
+      <button class="btn btn-s" onclick="tReset()">↺</button>
+      <button class="btn ${t.running?'btn-r':'btn-p'} w100" onclick="tToggle()">${t.running?'⏸ Pause':'▶ Start'}</button>
+      <button class="btn btn-s" onclick="tSkip()">⏭</button>
+    </div>
+    <div class="rg ph" style="padding:0">
+      <div class="row flex ac jb"><span class="sub">Subject</span>
+        <select class="sel" style="width:190px" onchange="tSetSubj(this.value)">
+          ${Object.entries(C).filter(([k])=>!['wellness','free'].includes(k)).map(([k,v])=>`<option value="${k}"${t.subj===k?' selected':''}>${v.lbl}</option>`).join('')}
+        </select></div>
+      <div class="sep-r"></div>
+      <div class="row flex ac jb"><span class="sub">Work</span>
+        <select class="sel" style="width:120px" onchange="tSetWork(+this.value)">
+          ${[25,30,45,50,60,90].map(m=>`<option value="${m}"${t.work===m?' selected':''}>${m} min</option>`).join('')}
+        </select></div>
+      <div class="sep-r"></div>
+      <div class="row flex ac jb"><span class="sub">Break</span>
+        <select class="sel" style="width:120px" onchange="S.timer.brk=+this.value;save()">
+          ${[5,10,15,20].map(m=>`<option value="${m}"${t.brk===m?' selected':''}>${m} min</option>`).join('')}
+        </select></div>
+    </div>`;
+}
+function initTimer(){if(S.timer.running&&!timerTick)startTick();}
+function tToggle(){S.timer.running=!S.timer.running;if(S.timer.running)startTick();else{clearInterval(timerTick);timerTick=null;}save();render();}
+function startTick(){
+  clearInterval(timerTick);
+  timerTick=setInterval(()=>{
+    if(!S.timer.running)return;
+    S.timer.left--;
+    if(S.timer.left<=0){
+      const wb=S.timer.isBreak;S.timer.isBreak=!wb;S.timer.running=false;
+      S.timer.left=(S.timer.isBreak?S.timer.brk:S.timer.work)*60;
+      if(!wb)S.timer.sessions++;
+      clearInterval(timerTick);timerTick=null;save();
+      showNotif(wb?'Focus time!':'Break time 🎉',wb?'Start your next session.':'Great work! '+S.timer.brk+' min break.');
+      render();return;
+    }
+    save();
+    const d=document.getElementById('timer-disp');
+    const r=document.getElementById('timer-ring');
+    if(d)d.textContent=fmtSec(S.timer.left);
+    if(r){const t=S.timer,tot=(t.isBreak?t.brk:t.work)*60,CC=2*Math.PI*88;r.setAttribute('stroke-dashoffset',(CC*(1-t.left/tot)).toFixed(1));}
+  },1000);
+}
+function tReset(){clearInterval(timerTick);timerTick=null;S.timer.running=false;S.timer.isBreak=false;S.timer.left=S.timer.work*60;save();render();}
+function tSkip(){clearInterval(timerTick);timerTick=null;S.timer.running=false;S.timer.isBreak=!S.timer.isBreak;S.timer.left=(S.timer.isBreak?S.timer.brk:S.timer.work)*60;save();render();}
+function stopTimer(){clearInterval(timerTick);timerTick=null;if(S.timer.running){S.timer.running=false;save();}}
+function tSetSubj(v){S.timer.subj=v;if(!S.timer.running)S.timer.left=S.timer.work*60;save();render();}
+function tSetWork(v){S.timer.work=v;if(!S.timer.running)S.timer.left=v*60;save();render();}
+
+/* ────────────────────────────────
+   GOALS VIEW
+────────────────────────────────── */
+function rGoals(){
+  const td=tdDone(),tt=tdTotal();
+  let h=`<div class="ph flex ac jb mb16"><div class="t2">Goals</div><div style="font-size:14px;color:var(--text3)">${td}/${tt} tasks</div></div>
+    <div class="ph mb20"><div class="flex ac jb mb8"><span class="fn" style="color:var(--text3)">Overall</span><span class="fn" style="font-weight:600">${tt?Math.round(td/tt*100):0}%</span></div>
+    <div class="pbar"><div class="pfill" style="width:${tt?Math.round(td/tt*100):0}%;background:var(--acc)"></div></div></div>`;
+  for(const key of['calculus','python','webdesign','electronics','thermo','biochem']){
+    const cat=C[key],subj=S.subjects[key],tasks=subj.tasks||[];
+    const dn=tasks.filter((_,i)=>S.tdone[key+'-'+i]).length,pct=tasks.length?Math.round(dn/tasks.length*100):0;
+    h+=`<div class="scard"><div class="flex ac jb mb12">
+      <div class="flex ac g12">
+        <div class="sico" style="background:${cat.bg};color:${cat.c}">${cat.sym}</div>
+        <div><div style="font-size:17px;font-weight:600">${cat.lbl}</div>
+          <div style="font-size:12px;color:var(--text3)">${dn}/${tasks.length} · ${pct}%</div></div>
+      </div>
+      <button class="btn btn-sm" style="background:${cat.bg};color:${cat.c}" onclick="addTask('${key}')">+ Task</button>
+    </div>
+    <div class="pbar mb12"><div class="pfill" style="width:${pct}%;background:${cat.c}"></div></div>
+    ${tasks.map((t,i)=>`<div class="task${S.tdone[key+'-'+i]?' done':''}" onclick="togTask('${key}-${i}')">
+      <div class="chk${S.tdone[key+'-'+i]?' on':''}"></div><span class="task-t">${t}</span></div>`).join('')}
+    <textarea class="inp mt8" rows="2" placeholder="Notes for ${cat.lbl}…" style="resize:none;font-size:14px"
+      onchange="S.subjects['${key}'].notes=this.value;save()">${subj.notes||''}</textarea>
+    </div>`;
+  }
+  return h;
+}
+function addTask(k){const t=prompt('New task:');if(t?.trim()){S.subjects[k].tasks.push(t.trim());save();render();}}
+
+/* ────────────────────────────────
+   SETTINGS VIEW
+────────────────────────────────── */
+function rSettings(){
+  const p=S.profile,set=S.settings;
+  return`<div class="sec" style="margin-top:8px">Profile</div>
+  <div class="scard mb20">
+    <div class="flex ac g16 mb16">
+      <button class="av-btn" onclick="openAvatar()">${p.avatar}</button>
+      <div style="flex:1"><input type="text" class="inp" placeholder="Your name" value="${p.name||''}"
+        oninput="S.profile.name=this.value;save();updateGreet()">
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Tap the avatar to change</div></div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:10px">Accent colour</div>
+    <div class="flex g12">${ACCENTS.map(a=>`<button class="acc-sw${p.accent===a.c?' active':''}" style="background:${a.c}" onclick="setAccent('${a.c}')" title="${a.n}"></button>`).join('')}</div>
+  </div>
+
+  <div class="sec">Notifications</div>
+  <div class="rg">
+    <div class="row flex ac jb"><div><div class="hl">Enable reminders</div>
+      <div class="fn" style="color:var(--text3)">Alerts before study blocks</div></div>
+      <button class="tog${set.notifs?' on':''}" onclick="togNotifs()"></button></div>
+    <div class="sep-r"></div>
+    <div class="row flex ac jb"><span class="sub">Remind me</span>
+      <select class="sel" style="width:140px" onchange="S.settings.notifyMin=+this.value;save();reschedNotifs()">
+        ${[2,5,10,15].map(m=>`<option value="${m}"${set.notifyMin===m?' selected':''}>${m} min before</option>`).join('')}
+      </select></div>
+    <div class="sep-r"></div>
+    <div class="row flex ac jb"><span class="sub">Permission</span>
+      <button class="btn btn-s btn-sm" onclick="reqNotif()">${S.notifPerm==='granted'?'✓ Granted':'Request'}</button></div>
+  </div>
+
+  <div class="sec">Subject reminders</div>
+  <div class="rg">
+    ${['calculus','python','webdesign','electronics','thermo','biochem'].flatMap((k,i,arr)=>[
+      `<div class="row flex ac jb"><span style="color:${C[k].c};font-size:15px">${C[k].lbl}</span>
+       <button class="tog${set.snotifs[k]?' on':''}" onclick="S.settings.snotifs['${k}']=!S.settings.snotifs['${k}'];save();render()"></button></div>`,
+      i<arr.length-1?'<div class="sep-r"></div>':'']).join('')}
+  </div>
+
+  <div class="sec">Social <span class="soon" style="margin-left:8px">COMING SOON</span></div>
+  <div class="scard mb20" style="opacity:.72">
+    <div class="flex col g12">
+      ${[['👥','Study Rooms','Study live with others — see who\'s focused'],
+         ['🏆','Leaderboard','Compare weekly study hours with friends'],
+         ['🔥','Streak Sharing','Share your daily study streak on social'],
+         ['🤝','Accountability Buddy','Pair up with a friend for daily check-ins']
+      ].map(([ico,t,d])=>`<div class="flex ac g12">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--fill);display:flex;align-items:center;justify-content:center;font-size:20px">${ico}</div>
+        <div><div style="font-weight:600;font-size:15px">${t}</div><div class="fn" style="color:var(--text3)">${d}</div></div>
+      </div>`).join('')}
+      <div class="fn tc" style="color:var(--text3);margin-top:4px">Powered by <strong style="color:var(--text2)">Supabase</strong> · Contribute on <a href="https://github.com" target="_blank" style="color:var(--acc)">GitHub</a></div>
+    </div>
+  </div>
+
+  <div class="sec">App</div>
+  <div class="rg mb8">
+    <div class="row flex ac jb"><span class="sub">Version</span><span class="fn" style="color:var(--text3)">DayFlow 2.0 — Open Source</span></div>
+    <div class="sep-r"></div>
+    <div class="row" onclick="doReset()" style="cursor:pointer"><span style="color:var(--red);font-size:15px">Reset all data</span></div>
+  </div>
+  <div class="ph tc fn mb12" style="color:var(--text3);line-height:1.8;margin-top:8px">
+    <strong style="color:var(--text2)">Install as app</strong><br>
+    Chrome/Edge → Menu → "Install app"<br>
+    iOS Safari → Share → "Add to Home Screen"<br>
+    Android → Menu → "Add to Home Screen"
+  </div>`;
+}
+function togNotifs(){S.settings.notifs=!S.settings.notifs;save();render();if(S.settings.notifs)reqNotif();}
+function setAccent(col){
+  S.profile.accent=col;save();
+  document.documentElement.style.setProperty('--acc',col);
+  document.getElementById('theme-meta')?.setAttribute('content',col);
+  document.querySelectorAll('.mbar-eq span').forEach(s=>s.style.background=col);
+  const pb=document.getElementById('mplaybtn');if(pb)pb.style.background=col;
+  render();
+}
+function updateGreet(){const el=document.querySelector('#page .t1');if(el)el.textContent=`${greet()}, ${S.profile.name||'Champion'} ${S.profile.avatar}`;}
+function doReset(){if(confirm('Reset all data?')){localStorage.removeItem('df2');S=defState();save();render();toast('🔄','Reset','Starting fresh');}}
+
+function openAvatar(){
+  const bg=document.createElement('div');bg.className='mbg';bg.id='modal-bg';
+  bg.innerHTML=`<div class="modal"><div class="modal-h"></div>
+    <div class="t3 mb16 tc">Choose your avatar</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+      ${AVATARS.map(a=>`<button onclick="S.profile.avatar='${a}';save();closeModal();render()" style="font-size:30px;background:${S.profile.avatar===a?'var(--fill)':'none'};border:none;border-radius:14px;padding:10px;cursor:pointer;transition:transform .15s cubic-bezier(.34,1.56,.64,1)" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'">${a}</button>`).join('')}
+    </div>
+    <button class="btn btn-s btn-fw" onclick="closeModal()">Cancel</button>
+  </div>`;
+  bg.addEventListener('click',e=>{if(e.target===bg)closeModal();});
+  document.body.appendChild(bg);
+}
+
+/* ────────────────────────────────
+   SCHEDULE EDIT
+────────────────────────────────── */
+function openAddBlk(){
+  const bg=document.createElement('div');bg.className='mbg';bg.id='modal-bg';
+  bg.innerHTML=`<div class="modal"><div class="modal-h"></div><div class="t3 mb16">Add block</div>
+    <div class="mb12"><label class="fn" style="color:var(--text3);display:block;margin-bottom:6px">Time</label><input type="time" class="inp" id="nb-t" value="17:00"></div>
+    <div class="mb12"><label class="fn" style="color:var(--text3);display:block;margin-bottom:6px">Title</label><input type="text" class="inp" id="nb-title" placeholder="e.g. Evening review"></div>
+    <div class="mb12"><label class="fn" style="color:var(--text3);display:block;margin-bottom:6px">Duration (min)</label><input type="number" class="inp" id="nb-d" placeholder="60" min="0"></div>
+    <div class="mb20"><label class="fn" style="color:var(--text3);display:block;margin-bottom:6px">Category</label>
+      <select class="sel" id="nb-c">${Object.entries(C).map(([k,v])=>`<option value="${k}">${v.lbl}</option>`).join('')}</select></div>
+    <button class="btn btn-p btn-fw mb8" onclick="saveBlk()">Add block</button>
+    <button class="btn btn-s btn-fw" onclick="closeModal()">Cancel</button>
+  </div>`;
+  bg.addEventListener('click',e=>{if(e.target===bg)closeModal();});
+  document.body.appendChild(bg);
+}
+function saveBlk(){
+  const time=document.getElementById('nb-t')?.value,title=document.getElementById('nb-title')?.value?.trim(),dur=+document.getElementById('nb-d')?.value||0,cat=document.getElementById('nb-c')?.value;
+  if(!time||!title){toast('⚠️','Fill all fields','Time and title required');return;}
+  S.schedule.push({id:'u'+Date.now(),time,dur,cat,title,note:''});
+  S.schedule.sort((a,b)=>t2m(a.time)-t2m(b.time));
+  save();closeModal();nav('schedule');toast('✅','Block added',title+' at '+fmtT(time));
+}
+function delBlk(id){const b=S.schedule.find(x=>x.id===id);if(!b)return;if(confirm(`Delete "${b.title}"?`)){S.schedule=S.schedule.filter(x=>x.id!==id);save();render();toast('🗑','Deleted',b.title);}}
+function closeModal(){document.getElementById('modal-bg')?.remove();}
+
+/* ────────────────────────────────
+   NOTIFICATIONS
+────────────────────────────────── */
+async function reqNotif(){
+  if(!('Notification' in window)){toast('⚠️','Not supported','Use Chrome or Safari for notifications');return;}
+  const p=await Notification.requestPermission();S.notifPerm=p;save();
+  if(p==='granted'){toast('🔔','Notifications on','Reminders set for each block');reschedNotifs();}
+  else toast('⚠️','Denied','Enable in browser/OS settings');
+  render();
+}
+function reschedNotifs(){
+  if(S.notifPerm!=='granted'||!S.settings.notifs)return;
+  const nm=nowMin(),min=S.settings.notifyMin;
+  schd().forEach(b=>{
+    if(!b.dur||!S.settings.snotifs[b.cat])return;
+    const rem=t2m(b.time)-min;if(rem<=nm)return;
+    const ms=(rem-nm)*60*1000;
+    const fire=()=>new Notification(`⏰ In ${min} min: ${b.title}`,{body:`${fmtT(b.time)} · ${fmtMin(b.dur)}`,icon:'./icon.svg',tag:b.id});
+    navigator.serviceWorker?.controller
+      ?navigator.serviceWorker.controller.postMessage({type:'SCHEDULE_NOTIF',title:`⏰ In ${min} min: ${b.title}`,body:`${fmtT(b.time)} · ${fmtMin(b.dur)}`,delay:ms})
+      :setTimeout(fire,ms);
+  });
+}
+function showNotif(title,body){if(S.notifPerm==='granted')new Notification(title,{body,icon:'./icon.svg'});toast('🔔',title,body);}
+
+/* ────────────────────────────────
+   TOAST
+────────────────────────────────── */
+let ttimer=null;
+function toast(ico,title,msg){
+  document.getElementById('toast')?.remove();if(ttimer)clearTimeout(ttimer);
+  const el=document.createElement('div');el.id='toast';el.className='toast';
+  el.innerHTML=`<div class="toast-i">${ico}</div><div><div style="font-weight:600;font-size:15px">${title}</div><div style="font-size:13px;opacity:.75;margin-top:1px">${msg}</div></div>`;
+  document.body.appendChild(el);ttimer=setTimeout(()=>el.remove(),4000);
+}
+
+/* ────────────────────────────────
+   MUSIC PLAYER
+────────────────────────────────── */
+let ytPlayer=null,ytReady=false,ytPlaying=false,curStream=0,panelOpen=false,ytLoaded=false;
+
+function togglePanel(){
+  panelOpen=!panelOpen;
+  const panel=document.getElementById('mpanel');
+  const chev=document.getElementById('mchev');
+  if(panel)panel.style.display=panelOpen?'block':'none';
+  if(chev)chev.style.transform=panelOpen?'rotate(180deg)':'rotate(0)';
+  document.getElementById('mbar').style.height=panelOpen?'auto':'var(--mbarh)';
+  if(panelOpen)buildSGrid();
+}
+
+function buildSGrid(){
+  const g=document.getElementById('sgrid');if(!g)return;
+  g.innerHTML=STREAMS.map((s,i)=>`<div class="sopt${i===curStream?' active':''}" onclick="mSelectStream(${i})">
+    <div style="font-size:18px;margin-bottom:4px">${s.icon}</div>
+    <div class="sopt-name">${s.name}</div>
+    <div class="sopt-desc">${s.desc}</div>
+  </div>`).join('');
+}
+
+function mSelectStream(idx){
+  curStream=idx;
+  document.getElementById('mtrack').textContent=STREAMS[idx].name;
+  buildSGrid();
+  if(!ytLoaded){loadYT();setTimeout(()=>{if(ytReady&&ytPlayer){ytPlayer.loadVideoById(STREAMS[idx].id);ytPlayer.setVolume(+document.getElementById('mvol').value);ytPlayer.playVideo();ytPlaying=true;mRefreshUI();}},2500);return;}
+  if(ytReady&&ytPlayer){ytPlayer.loadVideoById(STREAMS[idx].id);ytPlayer.setVolume(+document.getElementById('mvol').value);ytPlayer.playVideo();ytPlaying=true;mRefreshUI();}
+}
+
+function mTogglePlay(){
+  if(!ytLoaded){loadYT();toast('🎵','Loading music…','Starting in a moment');
+    setTimeout(()=>{if(ytReady&&ytPlayer){ytPlayer.loadVideoById(STREAMS[curStream].id);ytPlayer.setVolume(70);ytPlayer.playVideo();ytPlaying=true;mRefreshUI();}},2500);return;}
+  if(!ytReady||!ytPlayer){toast('🎵','Loading…','Music will start shortly');return;}
+  if(ytPlaying){ytPlayer.pauseVideo();ytPlaying=false;}else{ytPlayer.playVideo();ytPlaying=true;}
+  mRefreshUI();
+}
+
+function mSetVol(v){if(ytReady&&ytPlayer)ytPlayer.setVolume(v);}
+
+function mPlayCustom(){
+  const raw=document.getElementById('cust-id')?.value?.trim();if(!raw)return;
+  let id=raw;const m=raw.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);if(m)id=m[1];
+  document.getElementById('mtrack').textContent='Custom stream';
+  if(!ytLoaded){loadYT();setTimeout(()=>{if(ytReady&&ytPlayer){ytPlayer.loadVideoById(id);ytPlayer.setVolume(70);ytPlayer.playVideo();ytPlaying=true;mRefreshUI();}},2500);return;}
+  if(ytReady&&ytPlayer){ytPlayer.loadVideoById(id);ytPlayer.setVolume(+document.getElementById('mvol').value);ytPlayer.playVideo();ytPlaying=true;mRefreshUI();}
+}
+
+function mRefreshUI(){
+  const eq=document.getElementById('meq');if(eq)eq.classList.toggle('paused',!ytPlaying);
+  const st=document.getElementById('mstate');if(st)st.textContent=ytPlaying?'Playing — '+(STREAMS[curStream]?.name||'Custom'):'Paused';
+  const btn=document.getElementById('mplaybtn');
+  if(btn)btn.innerHTML=ytPlaying
+    ?`<svg width="13" height="13" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="white" rx="1"/><rect x="14" y="4" width="4" height="16" fill="white" rx="1"/></svg>`
+    :`<svg width="13" height="13" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white"/></svg>`;
+}
+
+function loadYT(){
+  if(ytLoaded)return;ytLoaded=true;
+  const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s);
+}
+
+window.onYouTubeIframeAPIReady=function(){
+  ytPlayer=new YT.Player('yt-player',{
+    height:'0',width:'0',videoId:STREAMS[curStream].id,
+    playerVars:{autoplay:0,controls:0,playsinline:1},
+    events:{
+      onReady:()=>{ytReady=true;ytPlayer.setVolume(70);},
+      onStateChange:e=>{ytPlaying=e.data===YT.PlayerState.PLAYING;mRefreshUI();}
+    }
+  });
+};
+
+/* ────────────────────────────────
+   PWA
+────────────────────────────────── */
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();installPrompt=e;
+  const sl=document.getElementById('islot');
+  if(sl)sl.innerHTML=`<div class="ibanner"><span style="font-size:28px">📲</span><div style="flex:1"><div style="font-weight:600;font-size:15px">Install DayFlow</div><div style="font-size:13px;opacity:.75">Works offline + notifications</div></div><button onclick="doInstall()">Install</button></div>`;
+});
+function doInstall(){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(r=>{if(r.outcome==='accepted')toast('🎉','Installed!','DayFlow is on your home screen');installPrompt=null;document.getElementById('islot').innerHTML='';});}
+window.addEventListener('appinstalled',()=>toast('🎉','Installed!','DayFlow on your home screen'));
+
+/* ────────────────────────────────
+   SERVICE WORKER
+────────────────────────────────── */
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+
+/* ────────────────────────────────
+   LIVE CLOCK
+────────────────────────────────── */
+setInterval(()=>{if(view==='today')render();},60000);
+
+/* ────────────────────────────────
+   INIT
+────────────────────────────────── */
+document.documentElement.style.setProperty('--acc',S.profile.accent||'#007AFF');
+document.getElementById('theme-meta')?.setAttribute('content',S.profile.accent||'#007AFF');
+S.notifPerm=Notification?.permission||'default';
+render();
+loadYT(); // preload silently
+
+setTimeout(()=>{if(S.settings.notifs&&S.notifPerm==='default')reqNotif();},3000);
+setTimeout(()=>{if(S.notifPerm==='granted')reschedNotifs();},4000);
+</script>
+</body>
+</html>
